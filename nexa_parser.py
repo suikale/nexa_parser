@@ -156,7 +156,6 @@ def handle_data(data, samplerate, channel):
     prev_state = get_bit(data[0], channel)
     delta_time = 1/samplerate
     count = 0
-    time = 0
 
     # check if output file exists, delete it if it does
     if exists(output_file):
@@ -188,6 +187,7 @@ def parse_sr_file(sr_file):
     print("sample rate: " + str(samplerate) + ", channel: " + str(channel))
 
     handle_data(data, samplerate, channel)
+    print("wrote output to", output_file)
 
 if __name__ == '__main__':
     # path to file.sr
