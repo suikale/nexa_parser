@@ -7,15 +7,15 @@ Parses Nexa PET-910 remote control payload captured with a logic analyzer from P
 
 #### bytes: 
 
-    0101, 0110, 1001 1010
+    0101, 0110, 1001, 1010
 
 #### bits:
 
     -1: 250 µs ON, 2550 µs OFF (init bit) 
 
-    1: 250 µs ON, 1250 µs OFF
+     1: 250 µs ON, 1250 µs OFF
     
-    0: 250 µs ON,  250 µs OFF
+     0: 250 µs ON,  250 µs OFF
 
 #### states:
     
