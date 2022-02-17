@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # takes a Pulseview .sr file, outputs a text file which has 
 # digital states (and their durations). Settings are customisable. 
 # The .sr file contains states as binary data, printed as long string
