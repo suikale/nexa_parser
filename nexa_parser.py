@@ -52,8 +52,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("FILE", help="Path to a Pulseview .sr file")
 args = parser.parse_args()
 # output filename is same as input but with .txt extension
-output_file = args.FILE[:args.FILE.index(".sr")] + ".txt"
-
+try:
+    output_file = args.FILE[:args.FILE.index(".sr")] + ".txt"
+except:
+    print("wrong file format, exiting")
+    exit()
 
 def get_config(meta):
     # get config values as bytes
