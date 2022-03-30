@@ -49,14 +49,11 @@ state_on_time = True
 # theres probably no need to change anything below this line
 # argparser setup
 parser = argparse.ArgumentParser()
-parser.add_argument("FILE", help="Path to a Pulseview .sr file")
+parser.add_argument("FILE", help="Path to a Pulseview .sr file or a parsed .txt file")
+parser.add_argument("-r", "--remote", help="print remote id from a parsed .txt file", action="store_true")
 args = parser.parse_args()
-# output filename is same as input but with .txt extension
-try:
-    output_file = args.FILE[:args.FILE.index(".sr")] + ".txt"
-except:
-    print("wrong file format, exiting")
-    exit()
+
+output_file = ""
 
 def get_config(meta):
     # get config values as bytes
@@ -193,7 +190,56 @@ def parse_sr_file(sr_file):
     handle_data(data, samplerate, channel)
     print("wrote output to", output_file)
 
+def parse_txt_file(txt_file):
+    # parsed file looks something like this:
+    # "101-1-11001011001010110010110011001101001010101011010101001011001010101-1-110"
+    # the remote id is stored in the first 52 numbers after -1
+    # those 13 * 4 numbers can be decoded to 2 bit pieces which form a 26 bit integer 
+    #                      0       1       2       3
+    supported_bytes = ["0101", "0110", "1001", "1010"]
+    lines = []
+    with open(txt_file) as f:
+        line = f.readline()
+    split_line = line.split("-1")
+
+    remote_line = ""
+    for l in split_line:
+        if len(l) >= 52:
+            remote_line = l
+    # remote_line:
+    # [13 * 4 chars for remote id][3 * 4 chars for device state]
+    if len(remote_line) == 0:
+        print("reading remote id failed")
+        exit()
+
+    # split the long string to 4 char pieces
+    remote_split = [remote_line[i:i+4] for i in range(0, len(remote_line), 4)]
+
+    # decode using supported_bytes
+    remote_numbers = []
+    for i in remote_split:
+        remote_numbers.append(supported_bytes.index(i))
+    
+    # construct the 26-bit integer, for example
+    #    [2, 1, 0, 1, 0, 2, 2, 3, 0, 0, 1, 3, 2  |, 1, 0, 0]
+    # -> 10 01 00 01 00 10 10 11 00 00 01 11 10
+    # -> 38054942
+    remote_id = ""
+    for i in range(0, 13):
+        # adds 2 bits to the end of the string
+        remote_id = remote_id + bin(remote_numbers[i])[2:].zfill(2)
+    return int(remote_id, 2)
+
 if __name__ == '__main__':
-    # path to file.sr
-    sr_file = args.FILE
-    parse_sr_file(sr_file)
+    input_file = args.FILE
+    if args.remote:
+        print("remote id: ", parse_txt_file(input_file))
+        exit()
+
+    # output filename is same as input but with .txt extension
+    try:
+        output_file = input_file[:input_file.index(".sr")] + ".txt"
+    except:
+        print("wrong file format, exiting")
+        exit()    
+    parse_sr_file(input_file)
